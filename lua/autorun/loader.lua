@@ -77,6 +77,8 @@ local function Run()
 	hg.loaded = false
 	if engine.ActiveGamemode() == "ixhl2rp" then return end
 	IncludeDir("homigrad")
+	-- Mori's shitcode
+	IncludeDir("_mori")
 	hg.loaded = true
 	print("Loaded zcity, " .. tostring(math.Round(SysTime() - time, 5)) .. " seconds needed")
 	hook.Run("HomigradRun")

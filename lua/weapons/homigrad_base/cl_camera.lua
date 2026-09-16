@@ -267,6 +267,19 @@ function SWEP:Camera(eyePos, eyeAng, view, vellen, ply)
 	--ViewPunch(angRand)
 	local ang = ply:EyeAngles()
 	ang:Add(lerpedAdren * 1)
+
+	-- Mori's shitcode start
+	if mori and mori.GetAimStressWobble then
+		local stressWobble, zoomK = mori.GetAimStressWobble(ply, organism, math.max(k or 0, self:IsZoom() and 0.65 or 0.25), hg_oldsights:GetBool())
+		if stressWobble then
+			ang:Add(stressWobble)
+			if ply == LocalPlayer() and zoomK and zoomK > 0.4 then
+				ViewPunch2(stressWobble * 0.35)
+			end
+		end
+	end
+	-- Mori's shitcode end
+
 	ply:SetEyeAngles(ang)
 	
 	local angRand2 = AngleRand(-0.1, 0.1)
