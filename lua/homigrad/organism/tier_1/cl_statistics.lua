@@ -74,6 +74,10 @@ local list = {
 	"heatbuff",
 	"blindness",
 	"fear",
+	-- Mori's shitcode start
+	"stress",
+	"stress_effect",
+	-- Mori's shitcode end
 	"assimilated",
 	"berserk",
 	"noradrenaline",

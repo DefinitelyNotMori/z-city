@@ -340,6 +340,7 @@ function hg.likely_to_phrase(ply)
 		or (temperature > 38 and 0.5)
 		or (blood < 3000 and 0.3)
 		or (fear > 0.5 and 0.7)
+		or ((org.stress or 0) > 0.55 and 0.85) -- Mori's shitcode
 		or (brain > 0.1 and brain * 5)
 		or (fear < -0.5 and 0.05)
 		or -0.1
@@ -375,6 +376,18 @@ local function get_status_message(ply)
 	local broken_dislocated = org.just_damaged_bone and ((org.just_damaged_bone + 3 - CurTime()) < -3)
 	local fear = org.fear
 	local adrenaline = org.adrenaline
+	-- Mori's shitcode start
+	if CLIENT and hg.organism and hg.organism.UpdateStress then
+		local frame = FrameNumber()
+		if org._stress_frame ~= frame then
+			org._stress_frame = frame
+			hg.organism.UpdateStress(org)
+		end
+	end
+	local MP = mori and mori.phrases
+	local stress = org.stress or (hg.organism and hg.organism.GetRawStress and hg.organism.GetRawStress(org)) or 0
+	local stress_prev = org.stress_prev or 0
+	-- Mori's shitcode end
 
 	if broken_dislocated and org.just_damaged_bone then
 		org.just_damaged_bone = nil
@@ -404,13 +417,15 @@ local function get_status_message(ply)
 		if pain > 75 and (broken_dislocated) then
 			most_wanted_phraselist = math.random(2) == 1 and audible_pain or (broken_notify and broken_limb or dislocated_limb)
 		elseif pain > 75 then
-			most_wanted_phraselist = audible_pain
+			-- Mori's shitcode
+			most_wanted_phraselist = (MP and math.random(3) == 1 and MP.acute_pain_stress) or audible_pain
 		elseif broken_dislocated then
 			most_wanted_phraselist = (broken_notify and broken_limb or dislocated_limb)
 		end
 
 		if pain > 100 then
-			most_wanted_phraselist = sharp_pain
+			-- Mori's shitcode
+			most_wanted_phraselist = (MP and math.random(2) == 1 and MP.acute_pain_stress) or sharp_pain
 		end
 
 		if not most_wanted_phraselist then
@@ -428,6 +443,14 @@ local function get_status_message(ply)
 		end
 	elseif after_unconscious_notify then
 		most_wanted_phraselist = after_unconscious
+	-- Mori's shitcode start
+	elseif MP and stress_prev > 0.55 and stress < 0.35 and math.random(3) == 1 then
+		most_wanted_phraselist = MP.stress_relief
+	elseif MP and stress > 0.7 then
+		most_wanted_phraselist = math.random(2) == 1 and MP.panic_stress or MP.heartbeat_stress
+	elseif MP and stress > 0.45 and adrenaline > 0.8 then
+		most_wanted_phraselist = MP.heartbeat_stress
+	-- Mori's shitcode end
 	elseif hg.nothing_happening(ply) then
 		most_wanted_phraselist = random_phrase
 
@@ -436,6 +459,8 @@ local function get_status_message(ply)
 		end
 	elseif hg.fearful(ply) then
 		most_wanted_phraselist = ((IsAimedAt(ply) > 0.9) and is_aimed_at_phrases or (math.random(10) == 1 and fear_hurt_ironic or fear_phrases))
+		-- Mori's shitcode
+		if MP and stress > 0.5 and math.random(4) == 1 then most_wanted_phraselist = MP.heartbeat_stress end
 	end
 
 	if brain > 0.1 then
@@ -472,9 +497,12 @@ function hg.get_phraselist(ply, type)
 	local org = ply.organism	
 	if not org or not org.brain then return "" end
 
-	if not isstring(type) or not allowedlist_types[type] then return "" end
+	if not isstring(type) then return "" end
 
 	local needed_list = allowedlist_types[type]
+	-- Mori's shitcode
+	if not needed_list and mori and mori.phrases then needed_list = mori.phrases[type] end
+	if not needed_list then return "" end
 
 	local str = needed_list[math.random(#needed_list)]
 	return str

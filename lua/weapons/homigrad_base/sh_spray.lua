@@ -28,6 +28,8 @@ function SWEP:GetPrimaryMul()
 	local mul = ((0.5) + math_max(self.Primary.Force / 110 - 1, 0)) * (owner.Crouching and owner:Crouching() and self.CrouchMul or 1) * (self.attachments and self.attachments.barrel and self.attachments.barrel[1] ~= "empty" and 0.75 or 1)
 	self:ApplyForce(mul)
 	mul = ((mul or 0) * (self.Supressor and 0.75 or 1) * (owner.organism and owner.organism.recoilmul or 1)) * hg_recoilmul:GetFloat()
+	-- Mori's shitcode
+	if mori and mori.GetRecoilStressMul then mul = mul * mori.GetRecoilStressMul(owner.organism) end
 	return mul
 end
 
@@ -126,7 +128,9 @@ function SWEP:PrimarySpread()
 		sprayAng:RotateAroundAxis(angle_zero:Forward(), eyeang.roll)
 		sprayAng.roll = 0
 
-		owner:SetEyeAngles(eyeang + sprayAng * 3 * (organism.recoilmul or 1) * (owner.posture == 1 and not self:IsZoom() and 0.1 or 1) * 0.25)
+		-- Mori's shitcode
+		local stressSpray = (mori and mori.GetSprayStressMul and mori.GetSprayStressMul(organism)) or 1
+		owner:SetEyeAngles(eyeang + sprayAng * 3 * (organism.recoilmul or 1) * stressSpray * (owner.posture == 1 and not self:IsZoom() and 0.1 or 1) * 0.25)
 		
 		local rnd1, rnd2 = math.Rand(1,2), math.Rand(-1,1)
 		ViewPunch2(Angle(2 * rnd1,2 * rnd2,0) * mul * 0.5)

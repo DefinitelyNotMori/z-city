@@ -85,6 +85,9 @@ module[2] = function(owner, org, timeValue)
 		org.fear = math.max(org.fear, 0)
 	end
 
+	-- Mori's shitcode
+	if hg.organism.UpdateStress then hg.organism.UpdateStress(org) end
+
 	-- temperature
 	local needed_temp = math.min(math.max(37 * (org.pulse / 45), 35), 36.7)
 	local changeRate = timeValue / 60

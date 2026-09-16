@@ -69,6 +69,11 @@ hook.Add("Org Clear", "Main", function(org)
 
 	org.fear = 0
 	org.fearadd = 0
+	-- Mori's shitcode start
+	org.stress = 0
+	org.stress_prev = 0
+	org.stress_effect = 0
+	-- Mori's shitcode end
 	--//
 
 	org.assimilated = 0
@@ -152,6 +157,10 @@ local function send_organism(org, ply)
 	sendtable.temperature = org.temperature
 	sendtable.canmove = org.canmove
 	sendtable.fear = org.fear
+	-- Mori's shitcode start
+	sendtable.stress = org.stress
+	sendtable.stress_effect = org.stress_effect
+	-- Mori's shitcode end
 	sendtable.llegdislocation = org.llegdislocation
 	sendtable.rlegdislocation = org.rlegdislocation
 	sendtable.rarmdislocation = org.rarmdislocation

@@ -763,15 +763,23 @@ function SWEP:EmitShoot()
 	end
 	local nearDist = (GetViewEntity() == ply or GetViewEntity():GetPos():Distance( self:GetPos() ) < 150)
 
-	if GetGlobalBool("hg_shoot_tinnitus", false) and nearDist and !self.Supressor and !hadEarProtection then
+	-- Mori's shitcode start
+	local indoorDeaf = mori and mori.ShouldIndoorShootDeaf and mori.ShouldIndoorShootDeaf(insideVal, self, hadEarProtection)
+	if (GetGlobalBool("hg_shoot_tinnitus", false) or indoorDeaf) and nearDist and !self.Supressor and !hadEarProtection then
 		local result = hook.Run("ZC_DisableShootTinnitus",lply,insideVal)
 		if !result then
-			lply.TinnitusFactor = (lply.TinnitusFactor or 0) + ( (self.Primary.Force * (self.NumBullet or 1) ) / 3) + insideVal
-			if lply.TinnitusFactor > 32 then
-				lply:AddTinnitus(lply.TinnitusFactor / 100)
+			local add = ( (self.Primary.Force * (self.NumBullet or 1) ) / 3) + insideVal
+			if indoorDeaf and mori.IndoorShootTinnitusAdd then
+				add = add + mori.IndoorShootTinnitusAdd(insideVal, self)
+			end
+			lply.TinnitusFactor = (lply.TinnitusFactor or 0) + add
+			local threshold = indoorDeaf and 20 or 32
+			if lply.TinnitusFactor > threshold then
+				lply:AddTinnitus(lply.TinnitusFactor / (indoorDeaf and 70 or 100))
 			end
 		end
 	end
+	-- Mori's shitcode end
 
 	if (self.Primary.SoundFP or self.Supressor and self.SupressedSoundFP) and nearDist then
 		self:PlaySnd((self.Supressor and self.SupressedSoundFP) or self.Primary.SoundFP, nil, nil, vol, nil, 55533, not self.Supressor)
