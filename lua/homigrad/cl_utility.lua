@@ -916,22 +916,24 @@ players : 1 humans, 0 bots (20 max)
 --\\ Tinnitus function
 	if CLIENT then
 		local lply = LocalPlayer()
-		local function AddTinnitus(time, needSound)
+		local function AddTinnitus(time, needSound, maxFade)
 			lply = LocalPlayer()
 			lply.tinnitus = CurTime() + time * 4
+			-- Optional soft cap for soundfade (shoot tinnitus); flashbang/otrub omit → full 120
+			lply.tinnitusMaxFade = maxFade or 120
 			lply:SetDSP(32)
 		end
 
 		local plymeta = FindMetaTable("Player")
-		function plymeta:AddTinnitus(time,needSound)
+		function plymeta:AddTinnitus(time, needSound, maxFade)
 			needSound = needSound or false
-			AddTinnitus(time,needSound)
+			AddTinnitus(time, needSound, maxFade)
 		end
 
 		net.Receive("send_tinnitus",function()
 			local time = net.ReadFloat()
 			local bool = net.ReadBool()
-			AddTinnitus(time,bool)
+			AddTinnitus(time, bool)
 		end)
 	end
 --//
