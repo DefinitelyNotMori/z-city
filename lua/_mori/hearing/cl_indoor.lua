@@ -15,6 +15,6 @@ end
 -- Extra tinnitus weight for enclosed shots (on top of stock formula)
 function mori.IndoorShootTinnitusAdd(insideVal, wep)
 	if not mori.ShouldIndoorShootDeaf(insideVal, wep, false) then return 0 end
-	-- more enclosed = harder ringing
-	return (insideVal or 0) * 1.25
+	-- more enclosed = harder ringing (soft: muffling + ring, not full mute)
+	return (insideVal or 0) * 0.4
 end

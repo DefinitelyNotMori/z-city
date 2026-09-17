@@ -396,8 +396,10 @@ hook.Add("Post Post Pre Post Processing", "organism-effects", function()
 	local immobilization = org.immobilization or 0
 	local incapacitated = org.incapacitated or false
 	local critical = org.critical or false
-	tinnitusSoundFactor = Lerp(FrameTime()*2.5,tinnitusSoundFactor or 0, math.min(math.max( lply.tinnitus and (lply.tinnitus - CurTime()) or 0, 0)*7.5,120))
+	local tinnitusFadeCap = lply.tinnitusMaxFade or 120
+	tinnitusSoundFactor = Lerp(FrameTime()*2.5,tinnitusSoundFactor or 0, math.min(math.max( lply.tinnitus and (lply.tinnitus - CurTime()) or 0, 0)*7.5, tinnitusFadeCap))
 	local tinnitusSoundFactor2 = tinnitusSoundFactor + (hook.Run("ModifyTinnitusFactor", tinnitusSoundFactor) or 0)
+	tinnitusSoundFactor2 = math.min(tinnitusSoundFactor2, tinnitusFadeCap)
 
 	--print(lply.tinnitus)
 	local adrenK = math.min(math.max(1 + adrenaline, 1), 1.2)

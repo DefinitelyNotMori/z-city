@@ -763,7 +763,16 @@ function SWEP:EmitShoot()
 	end
 	local nearDist = (GetViewEntity() == ply or GetViewEntity():GetPos():Distance( self:GetPos() ) < 150)
 
-	-- Mori's shitcode start
+	if (self.Primary.SoundFP or self.Supressor and self.SupressedSoundFP) and nearDist then
+		self:PlaySnd((self.Supressor and self.SupressedSoundFP) or self.Primary.SoundFP, nil, nil, vol, nil, 55533, not self.Supressor)
+	else
+		self:PlaySnd(self.Supressor and (self.SupressedSound or (self:IsPistolHoldType() and "homigrad/weapons/pistols/sil.wav" or "m4a1/m4a1_suppressed_fp.wav")) or self.Primary.Sound, nil, nil, vol, nil, 55533, not self.Supressor)
+	end
+	if !self.Supressor then
+		self:PlaySndDist(self.DistSound, nil, nil, nil, nil, 55511, not self.Supressor)
+	end
+
+	-- Mori's shitcode start (after primary shot so tinnitus doesn't lead the bang)
 	local indoorDeaf = mori and mori.ShouldIndoorShootDeaf and mori.ShouldIndoorShootDeaf(insideVal, self, hadEarProtection)
 	if (GetGlobalBool("hg_shoot_tinnitus", false) or indoorDeaf) and nearDist and !self.Supressor and !hadEarProtection then
 		local result = hook.Run("ZC_DisableShootTinnitus",lply,insideVal)
@@ -773,22 +782,13 @@ function SWEP:EmitShoot()
 				add = add + mori.IndoorShootTinnitusAdd(insideVal, self)
 			end
 			lply.TinnitusFactor = (lply.TinnitusFactor or 0) + add
-			local threshold = indoorDeaf and 20 or 32
+			local threshold = indoorDeaf and 28 or 32
 			if lply.TinnitusFactor > threshold then
-				lply:AddTinnitus(lply.TinnitusFactor / (indoorDeaf and 70 or 100))
+				lply:AddTinnitus(lply.TinnitusFactor / 100, false, 55)
 			end
 		end
 	end
 	-- Mori's shitcode end
-
-	if (self.Primary.SoundFP or self.Supressor and self.SupressedSoundFP) and nearDist then
-		self:PlaySnd((self.Supressor and self.SupressedSoundFP) or self.Primary.SoundFP, nil, nil, vol, nil, 55533, not self.Supressor)
-	else
-		self:PlaySnd(self.Supressor and (self.SupressedSound or (self:IsPistolHoldType() and "homigrad/weapons/pistols/sil.wav" or "m4a1/m4a1_suppressed_fp.wav")) or self.Primary.Sound, nil, nil, vol, nil, 55533, not self.Supressor)
-	end
-	if !self.Supressor then
-		self:PlaySndDist(self.DistSound, nil, nil, nil, nil, 55511, not self.Supressor)
-	end
 end
 
 function SWEP:CanSecondaryAttack()
