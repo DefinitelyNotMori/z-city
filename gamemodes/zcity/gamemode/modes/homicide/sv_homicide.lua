@@ -645,7 +645,10 @@ function MODE:SubModes()
 	return modes
 end
 
-local homicide_traitoramount = ConVarExists("homicide_traitoramount") and GetConVar("homicide_traitoramount") or CreateConVar("homicide_traitoramount", 1, FCVAR_SERVER_CAN_EXECUTE + FCVAR_ARCHIVE, "Homicide Only: Determine how many traitors should innocents face in homicide.", 1, 20)
+-- Mori's shitcode start
+-- Players per traitor (10 → 1 traitor at 10–19 players, 2 at 20–29, …). Min 1 traitor when ≥2 players.
+local homicide_traitoramount = ConVarExists("homicide_traitoramount") and GetConVar("homicide_traitoramount") or CreateConVar("homicide_traitoramount", "10", FCVAR_SERVER_CAN_EXECUTE + FCVAR_ARCHIVE, "Homicide Only: Players per traitor (e.g. 10 = 1 traitor per 10 players).", 1, 20)
+-- Mori's shitcode end
 
 function MODE:Intermission()
 	game.CleanUpMap()
@@ -680,15 +683,13 @@ function MODE:Intermission()
 	MODE.TraitorWord = MODE.TraitorWords[math.random(1, #MODE.TraitorWords)]
 	MODE.TraitorWordSecond = MODE.TraitorWords[math.random(1, #MODE.TraitorWords)]
 
-	local traitors_needed = math.min(player_count - 1, homicide_traitoramount:GetInt())
-	
-	if(MODE.ShouldStartRoleRound())then
-		traitors_needed = math.ceil(player_count / 9)
-		
-		if(player_count > 8 and math.random(1, 8) == 1)then
-			traitors_needed = traitors_needed + 1
-		end
+	-- Mori's shitcode start
+	local players_per_traitor = math.max(1, homicide_traitoramount:GetInt())
+	local traitors_needed = 0
+	if player_count >= 2 then
+		traitors_needed = math.Clamp(math.max(1, math.floor(player_count / players_per_traitor)), 1, player_count - 1)
 	end
+	-- Mori's shitcode end
 
 	MODE.TraitorExpectedAmt = traitors_needed
 	local main_traitor = nil
